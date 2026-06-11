@@ -176,6 +176,60 @@ h2 {
   margin-bottom: 0;
 }
 
+.editor-chrome {
+  border-bottom: 1px solid #2d3932;
+  background: #171c19;
+}
+
+.editor-tabs {
+  display: flex;
+  min-height: 42px;
+  align-items: end;
+  gap: 6px;
+  padding: 8px 10px 0;
+}
+
+.editor-tab {
+  min-height: 34px;
+  border: 1px solid #2d3932;
+  border-bottom-color: #0d100e;
+  border-radius: 6px 6px 0 0;
+  padding: 0 14px;
+  color: #f6f3e8;
+  background: #0d100e;
+  cursor: default;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: 0.84rem;
+}
+
+.editor-meta {
+  display: flex;
+  min-height: 34px;
+  align-items: center;
+  gap: 10px;
+  border-top: 1px solid #26312c;
+  padding: 0 12px;
+  color: #9fb0a6;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: 0.78rem;
+}
+
+.editor-path {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.editor-badge {
+  border: 1px solid #334139;
+  border-radius: 999px;
+  padding: 2px 7px;
+  color: #8bd89f;
+  background: #101411;
+  white-space: nowrap;
+}
+
 .file-viewer {
   min-height: 560px;
   max-height: calc(100vh - 210px);

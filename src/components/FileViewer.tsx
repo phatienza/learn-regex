@@ -8,13 +8,18 @@ interface FileViewerProps {
 
 export function FileViewer({ file, matchSpans }: FileViewerProps) {
   return (
-    <section className="workbench-panel file-panel" aria-labelledby="file-viewer-title">
-      <div className="panel-bar">
-        <div>
-          <p className="panel-kicker">sample file</p>
-          <h2 id="file-viewer-title">{file.filename}</h2>
+    <section className="workbench-panel file-panel" aria-label={`${file.filename} sample file`}>
+      <div className="editor-chrome">
+        <div className="editor-tabs" role="tablist" aria-label="Open sample files">
+          <button className="editor-tab is-active" role="tab" aria-selected="true" type="button">
+            {file.filename}
+          </button>
         </div>
-        <span className="line-count">{file.lines.length} lines</span>
+        <div className="editor-meta">
+          <span className="editor-path">~/learn-regex/samples/{file.filename}</span>
+          <span className="editor-badge">read-only</span>
+          <span className="line-count">{file.lines.length} lines</span>
+        </div>
       </div>
 
       <pre className="file-viewer" aria-label={`${file.filename} contents`}>
