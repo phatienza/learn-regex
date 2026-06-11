@@ -95,7 +95,7 @@ describe("App", () => {
     ).toBeInTheDocument();
 
     await user.type(screen.getByLabelText(/grep command/i), "grep 'ERROR' app.log");
-    await user.click(screen.getByRole("button", { name: /run command/i }));
+    await user.click(screen.getByRole("button", { name: /^run$/i }));
 
     expect(screen.getByText("$ grep 'ERROR' app.log")).toBeInTheDocument();
     expect(screen.getByText("Nice. Literal search is the baseline for every regex.")).toBeInTheDocument();

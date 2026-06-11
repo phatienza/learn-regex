@@ -289,8 +289,16 @@ h2 {
   background: #111511;
 }
 
+.section-heading-row {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
 .lesson-prompt span,
-.learn-block > span,
+.section-heading-row > span,
 .example-command span,
 .command-form label,
 .terminal-output-title {
@@ -300,6 +308,44 @@ h2 {
   font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
   font-size: 0.78rem;
   text-transform: uppercase;
+}
+
+.ghost-button {
+  display: inline-flex;
+  min-height: 34px;
+  max-width: 100%;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  padding: 0 10px;
+  color: #dbe7df;
+  background: transparent;
+  cursor: pointer;
+  font-size: 0.84rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.ghost-button:hover,
+.ghost-button:focus-visible {
+  border-color: #334139;
+  background: #18201b;
+}
+
+.learn-content,
+.lab-workspace {
+  animation: panel-enter 180ms ease-out;
+}
+
+.learn-content {
+  display: grid;
+  gap: 12px;
+}
+
+.lab-workspace {
+  display: grid;
 }
 
 .learn-block p,
@@ -371,11 +417,22 @@ h2 {
   padding: 16px;
 }
 
-.command-row {
+.command-line {
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
-  gap: 10px;
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
+  gap: 8px;
   align-items: center;
+  min-height: 44px;
+  border: 1px solid #26312c;
+  border-radius: 6px;
+  padding: 4px 4px 4px 12px;
+  background: #080c09;
+  box-shadow: inset 0 0 0 1px rgba(139, 216, 159, 0.04);
+}
+
+.command-line:focus-within {
+  border-color: #8bd89f;
+  box-shadow: 0 0 0 3px rgba(139, 216, 159, 0.12);
 }
 
 .prompt-symbol {
@@ -383,16 +440,29 @@ h2 {
   font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
 }
 
-.command-row input {
+.command-line input {
   width: 100%;
-  min-height: 42px;
-  border: 1px solid #334139;
-  border-radius: 6px;
-  padding: 0 12px;
+  min-width: 0;
+  min-height: 34px;
+  border: 0;
+  padding: 0;
   color: #f8fafc;
-  background: #0b0f0c;
+  background: transparent;
   font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
   font-size: 0.9rem;
+  outline: 0;
+}
+
+.terminal-cursor {
+  width: 8px;
+  height: 18px;
+  border-radius: 1px;
+  background: #8bd89f;
+  opacity: 0.24;
+}
+
+.command-line:focus-within .terminal-cursor {
+  animation: cursor-blink 1s steps(2, start) infinite;
 }
 
 .primary-button,
@@ -421,6 +491,22 @@ h2 {
   background: #1b211d;
 }
 
+.run-command-button {
+  display: inline-flex;
+  min-height: 34px;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border-radius: 5px;
+  padding: 0 12px;
+  color: #07110b;
+  background: #8bd89f;
+  cursor: pointer;
+  font-size: 0.84rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
 .primary-button:disabled,
 .secondary-button:disabled {
   cursor: not-allowed;
@@ -444,6 +530,19 @@ h2 {
   font-size: 0.9rem;
   line-height: 1.55;
   white-space: pre;
+}
+
+.terminal-command-echo {
+  margin: 0 0 8px;
+  color: #8bd89f;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: 0.9rem;
+  line-height: 1.55;
+  white-space: pre;
+}
+
+.terminal-line-appear {
+  animation: panel-enter 160ms ease-out;
 }
 
 .terminal-empty {
@@ -491,20 +590,8 @@ h2 {
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
-  justify-content: space-between;
+  justify-content: flex-end;
   padding: 16px;
-}
-
-.hint-list {
-  margin: 0;
-  border-top: 1px solid #26312c;
-  padding: 14px 16px 16px 38px;
-  color: #d7e2dc;
-  line-height: 1.55;
-}
-
-.hint-list li + li {
-  margin-top: 6px;
 }
 
 .completion-note {
@@ -608,6 +695,30 @@ h2 {
   opacity: 0.5;
 }
 
+@keyframes cursor-blink {
+  0%,
+  45% {
+    opacity: 0.95;
+  }
+
+  46%,
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes panel-enter {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 @keyframes terminal-buddy-idle {
   0%,
   100% {
@@ -693,7 +804,7 @@ h2 {
     padding: 12px;
   }
 
-  .command-row {
+  .command-line {
     grid-template-columns: auto minmax(0, 1fr);
   }
 
@@ -701,7 +812,11 @@ h2 {
     grid-template-columns: 1fr;
   }
 
-  .command-row .primary-button {
+  .terminal-cursor {
+    display: none;
+  }
+
+  .command-line .run-command-button {
     grid-column: 1 / -1;
   }
 
@@ -725,7 +840,11 @@ h2 {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .terminal-buddy-avatar {
+  .terminal-buddy-avatar,
+  .command-line:focus-within .terminal-cursor,
+  .learn-content,
+  .lab-workspace,
+  .terminal-line-appear {
     animation: none;
   }
 }

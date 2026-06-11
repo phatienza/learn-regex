@@ -1,6 +1,8 @@
-import { ArrowRight, CheckCircle2, Lightbulb, Play, RotateCcw, XCircle } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { ArrowRight, CheckCircle2, ChevronDown, ChevronUp, Play, RotateCcw, XCircle } from "lucide-react";
 import type { AttemptResult, Lesson } from "../domain/types";
 import { HighlightedText } from "./HighlightedText";
+import { TerminalBuddy, type TerminalBuddyStatus } from "./TerminalBuddy";
 
 interface TerminalPanelProps {
   lesson: Lesson;
@@ -36,7 +38,43 @@ export function TerminalPanel({
   onReset
 }: TerminalPanelProps) {
   const isPass = result?.status === "pass";
-  const visibleHints = lesson.hints.slice(0, hintCount);
+  const hasRunExample = Boolean(exampleResult);
+  const [isLearnOpen, setIsLearnOpen] = useState(true);
+  const [shouldFocusCommand, setShouldFocusCommand] = useState(false);
+  const [lastSubmittedCommand, setLastSubmittedCommand] = useState("");
+  const commandInputRef = useRef<HTMLInputElement>(null);
+  const buddyStatus: TerminalBuddyStatus = isComplete
+    ? "complete"
+    : isPass
+      ? "success"
+      : result?.status === "fail"
+        ? "fail"
+        : hintCount > 0
+          ? "hint"
+          : "idle";
+
+  useEffect(() => {
+    setIsLearnOpen(true);
+    setShouldFocusCommand(false);
+    setLastSubmittedCommand("");
+  }, [lesson.id]);
+
+  useEffect(() => {
+    if (!exampleResult || !shouldFocusCommand) return;
+    commandInputRef.current?.focus();
+    setShouldFocusCommand(false);
+  }, [exampleResult, shouldFocusCommand]);
+
+  function handleRunExample() {
+    setIsLearnOpen(false);
+    setShouldFocusCommand(true);
+    onRunExample();
+  }
+
+  function handleRunCommand() {
+    setLastSubmittedCommand(command);
+    onRun();
+  }
 
   return (
     <section className="workbench-panel terminal-panel" aria-labelledby="terminal-title">
@@ -51,19 +89,31 @@ export function TerminalPanel({
         </button>
       </div>
 
-      <div className="learn-block">
-        <span>Learn</span>
-        <p>{lesson.example.explanation}</p>
-        <div className="example-command">
-          <div>
-            <span>Example command</span>
-            <code>$ {lesson.example.command}</code>
-          </div>
-          <button className="secondary-button" onClick={onRunExample} type="button">
-            <Play aria-hidden="true" size={17} />
-            Run example
-          </button>
+      <div className={`learn-block${isLearnOpen ? " is-open" : " is-collapsed"}`}>
+        <div className="section-heading-row">
+          <span>Learn</span>
+          {hasRunExample ? (
+            <button className="ghost-button" onClick={() => setIsLearnOpen((current) => !current)} type="button">
+              {isLearnOpen ? <ChevronUp aria-hidden="true" size={16} /> : <ChevronDown aria-hidden="true" size={16} />}
+              {isLearnOpen ? "Hide Learn" : "Show Learn"}
+            </button>
+          ) : null}
         </div>
+        {isLearnOpen ? (
+          <div className="learn-content">
+            <p>{lesson.example.explanation}</p>
+            <div className="example-command">
+              <div>
+                <span>Example command</span>
+                <code>$ {lesson.example.command}</code>
+              </div>
+              <button className="secondary-button" onClick={handleRunExample} type="button">
+                <Play aria-hidden="true" size={17} />
+                Run example
+              </button>
+            </div>
+          </div>
+        ) : null}
         {exampleResult ? (
           <div className="example-output" aria-live="polite">
             {exampleResult.outputLines.length > 0 ? (
@@ -84,100 +134,92 @@ export function TerminalPanel({
         ) : null}
       </div>
 
-      <div className="lesson-prompt">
-        <span>Lab</span>
-        <p>{lesson.prompt}</p>
-        <div className="expected-output">
-          <span>Expected output</span>
-          {lesson.expected.outputLines.map((line) => (
-            <pre className="expected-output-line" key={line}>
-              {line}
-            </pre>
-          ))}
-        </div>
-      </div>
+      {hasRunExample ? (
+        <div className="lab-workspace">
+          <div className="lesson-prompt">
+            <span>Lab</span>
+            <p>{lesson.prompt}</p>
+            <div className="expected-output">
+              <span>Expected output</span>
+              {lesson.expected.outputLines.map((line) => (
+                <pre className="expected-output-line" key={line}>
+                  {line}
+                </pre>
+              ))}
+            </div>
+          </div>
 
-      <form
-        className="command-form"
-        onSubmit={(event) => {
-          event.preventDefault();
-          onRun();
-        }}
-      >
-        <label htmlFor="grep-command">Grep command</label>
-        <div className="command-row">
-          <span className="prompt-symbol" aria-hidden="true">
-            $
-          </span>
-          <input
-            autoComplete="off"
-            id="grep-command"
-            onChange={(event) => onCommandChange(event.target.value)}
-            placeholder={`grep 'pattern' ${filename}`}
-            spellCheck={false}
-            value={command}
-          />
-          <button className="primary-button" type="submit">
-            <Play aria-hidden="true" size={17} />
-            Run command
-          </button>
-        </div>
-      </form>
+          <form
+            className="command-form"
+            onSubmit={(event) => {
+              event.preventDefault();
+              handleRunCommand();
+            }}
+          >
+            <label htmlFor="grep-command">Grep command</label>
+            <div className="command-line">
+              <span className="prompt-symbol" aria-hidden="true">
+                $
+              </span>
+              <input
+                autoComplete="off"
+                id="grep-command"
+                onChange={(event) => onCommandChange(event.target.value)}
+                placeholder={`grep 'pattern' ${filename}`}
+                ref={commandInputRef}
+                spellCheck={false}
+                value={command}
+              />
+              <span className="terminal-cursor" aria-hidden="true" />
+              <button className="run-command-button" type="submit">
+                <Play aria-hidden="true" size={15} />
+                Run
+              </button>
+            </div>
+          </form>
 
-      <div className="terminal-output" aria-live="polite">
-        <div className="terminal-output-title">Output</div>
-        {result ? (
-          result.outputLines.length > 0 ? (
-            result.outputLines.map((line, index) => (
-              <pre className="terminal-output-line" key={`${line.lineNumber}-${index}`}>
-                <HighlightedText
-                  text={line.displayText}
-                  spans={line.spans}
-                  groups={line.groups}
-                  lineNumbers={line.lineNumberSpans}
-                />
-              </pre>
-            ))
-          ) : (
-            <p className="terminal-empty">No lines matched.</p>
-          )
-        ) : (
-          <p className="terminal-empty">Run a command to compare output with the lesson goal.</p>
-        )}
-      </div>
+          <div className="terminal-output" aria-live="polite">
+            <div className="terminal-output-title">Output</div>
+            {lastSubmittedCommand ? <pre className="terminal-command-echo">$ {lastSubmittedCommand}</pre> : null}
+            {result ? (
+              result.outputLines.length > 0 ? (
+                result.outputLines.map((line, index) => (
+                  <pre className="terminal-output-line terminal-line-appear" key={`${line.lineNumber}-${index}`}>
+                    <HighlightedText
+                      text={line.displayText}
+                      spans={line.spans}
+                      groups={line.groups}
+                      lineNumbers={line.lineNumberSpans}
+                    />
+                  </pre>
+                ))
+              ) : (
+                <p className="terminal-empty">No lines matched.</p>
+              )
+            ) : (
+              <p className="terminal-empty">Run a command to compare output with the lesson goal.</p>
+            )}
+          </div>
 
-      {result ? (
-        <div className={`feedback ${isPass ? "is-pass" : "is-fail"}`} role="status">
-          {isPass ? <CheckCircle2 aria-hidden="true" size={18} /> : <XCircle aria-hidden="true" size={18} />}
-          <span>{result.feedback}</span>
+          {result ? (
+            <div className={`feedback ${isPass ? "is-pass" : "is-fail"}`} role="status">
+              {isPass ? <CheckCircle2 aria-hidden="true" size={18} /> : <XCircle aria-hidden="true" size={18} />}
+              <span>{result.feedback}</span>
+            </div>
+          ) : null}
+
+          <TerminalBuddy hints={lesson.hints} hintCount={hintCount} onShowHint={onShowHint} status={buddyStatus} />
+
+          <div className="terminal-actions">
+            <button className="primary-button" disabled={!isPass} onClick={onAdvance} type="button">
+              <ArrowRight aria-hidden="true" size={17} />
+              {isLastLesson ? "Finish path" : "Next lesson"}
+            </button>
+          </div>
+
+          {isComplete ? <p className="completion-note">Beginner path complete. Progress is saved in this browser.</p> : null}
         </div>
       ) : null}
-
-      <div className="terminal-actions">
-        <button
-          className="secondary-button"
-          disabled={hintCount >= lesson.hints.length}
-          onClick={onShowHint}
-          type="button"
-        >
-          <Lightbulb aria-hidden="true" size={17} />
-          Show hint
-        </button>
-        <button className="primary-button" disabled={!isPass} onClick={onAdvance} type="button">
-          <ArrowRight aria-hidden="true" size={17} />
-          {isLastLesson ? "Finish path" : "Next lesson"}
-        </button>
-      </div>
-
-      {visibleHints.length > 0 ? (
-        <ol className="hint-list">
-          {visibleHints.map((hint) => (
-            <li key={hint}>{hint}</li>
-          ))}
-        </ol>
-      ) : null}
-
-      {isComplete ? <p className="completion-note">Beginner path complete. Progress is saved in this browser.</p> : null}
     </section>
   );
 }
