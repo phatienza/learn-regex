@@ -36,7 +36,8 @@ function getStatusCopy(status: TerminalBuddyStatus, hintCount: number) {
 }
 
 export function TerminalBuddy({ hints, hintCount, status, onShowHint }: TerminalBuddyProps) {
-  const revealedHintCount = Math.min(Math.max(0, hintCount), hints.length);
+  const normalizedHintCount = Number.isFinite(hintCount) ? Math.trunc(hintCount) : 0;
+  const revealedHintCount = Math.min(Math.max(0, normalizedHintCount), hints.length);
   const visibleHints = hints.slice(0, revealedHintCount);
   const hasMoreHints = revealedHintCount < hints.length;
   const buttonLabel = hasMoreHints ? "Ask Terminal Buddy for a hint" : "No more hints from Terminal Buddy";

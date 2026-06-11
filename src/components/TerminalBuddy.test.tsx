@@ -61,6 +61,14 @@ describe("TerminalBuddy", () => {
     expect(screen.getByRole("button", { name: /no more hints from terminal buddy/i })).toBeDisabled();
   });
 
+  it("treats NaN hint counts like zero", () => {
+    render(<TerminalBuddy hintCount={Number.NaN} hints={hints} onShowHint={vi.fn()} status="idle" />);
+
+    expect(screen.queryByText("Search for ERROR.")).not.toBeInTheDocument();
+    expect(screen.queryByText("Use the filename app.log.")).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /ask terminal buddy for a hint/i })).toBeEnabled();
+  });
+
   it.each(spriteCases)("uses the %s sprite", (status, spritePath) => {
     render(<TerminalBuddy hintCount={0} hints={hints} onShowHint={vi.fn()} status={status} />);
 
