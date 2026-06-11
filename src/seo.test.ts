@@ -17,6 +17,7 @@ describe("SEO files", () => {
     expect(html).toContain('name="robots" content="index, follow"');
     expect(html).toContain('name="author" content="Paul Henry Atienza"');
     expect(html).toContain(`rel="canonical" href="${canonicalUrl}"`);
+    expect(html).toContain('rel="icon" type="image/png" href="/terminal-buddy.png"');
     expect(html).toContain(`property="og:url" content="${canonicalUrl}"`);
     expect(html).toContain('property="og:title" content="Learn Grep Regex by Paul Henry Atienza"');
     expect(html).toContain('name="twitter:card" content="summary"');
