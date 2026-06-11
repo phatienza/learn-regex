@@ -14,7 +14,8 @@ The UI change should make each lesson feel less like a long scrolling page and m
 - After the example runs, automatically collapse Learn, reveal Lab, and focus the command input.
 - Keep a clear way to reopen Learn without losing lab state.
 - Add text-editor affordances to the sample file viewer so it feels like a read-only editor.
-- Add subtle terminal life through cursor animation and panel transitions.
+- Make the command entry feel like a real terminal prompt instead of a regular text input.
+- Add subtle terminal life through cursor animation, transcript behavior, and panel transitions.
 
 ## Non-Goals
 
@@ -86,11 +87,27 @@ When the learner changes lessons, resets progress, or advances:
 
 Add subtle interaction cues:
 
-- A blinking cursor or caret treatment near the command prompt/input while the input is focused.
+- A blinking cursor or caret treatment inside the command prompt while the input is focused.
 - Gentle transitions for Learn collapse and Lab reveal.
 - Slight output appearance animation when example or lab output is produced.
 
 Animations should be quick and functional. Use `prefers-reduced-motion` to disable or reduce transitions and cursor blinking for users who request less motion.
+
+## Command Entry
+
+The command entry must feel like a shell prompt, not a form input.
+
+Use this direction:
+
+- Render the command row as a terminal line inside the terminal surface.
+- Show a stable `$` prompt at the start of the line.
+- Style the actual input as inline terminal text: no rounded rectangle, no separate input box background, and no default input border.
+- Use a focused terminal-line state instead of a standard input focus ring around the text field.
+- Add a block or bar cursor treatment that blinks while the command input is focused.
+- Let pressing Enter submit the command, with the button kept as a compact runnable affordance rather than the main visual object.
+- After a command runs, echo the submitted command in the output transcript above the result so the panel reads like terminal history.
+
+The native input should remain accessible and keyboard-friendly, but visually it should disappear into the prompt line.
 
 ## State And Components
 
@@ -106,6 +123,7 @@ The parent `App` already owns command, result, example result, progress, and les
 - Reset `isLearnOpen` when the lesson id changes.
 - Collapse Learn after `exampleResult` appears.
 - Focus the command input with a `ref` after `Run example`.
+- Store the last submitted lab command only if needed to echo it in the terminal transcript.
 
 ## Accessibility
 
@@ -125,6 +143,8 @@ Add focused coverage for:
 - The Learn toggle can reopen the lesson explanation after the example.
 - Changing lessons resets the guided flow to Learn mode.
 - Existing first-lesson completion flow still works after the UI state changes.
+- The command area visually reads as a terminal prompt rather than a standalone text field.
+- Submitted commands echo in the terminal output transcript.
 
 Continue to run the full unit test suite and production build before completion. Use browser validation for desktop and mobile viewports because this is a layout and interaction change.
 
@@ -136,5 +156,7 @@ Continue to run the full unit test suite and production build before completion.
 - Learn is visible first and Lab is hidden until the example runs.
 - Running the example automatically transitions the learner into Lab mode and focuses the command input.
 - The learner can reopen Learn at any time after the example runs.
+- The command entry looks and behaves like an inline terminal prompt, not a boxed text input.
+- The output area includes the submitted command and result as a terminal-like transcript.
 - Cursor animation and transitions make the page feel alive without making it noisy.
 - Desktop and mobile layouts remain readable with no overlapping text or controls.
