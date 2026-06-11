@@ -283,13 +283,20 @@ git commit -m "feat: add editor chrome to file viewer"
 
 **Files:**
 - Create: `public/terminal-buddy.png`
+- Create: `public/terminal-buddy-idle.png`
+- Create: `public/terminal-buddy-hint.png`
+- Create: `public/terminal-buddy-fail.png`
+- Create: `public/terminal-buddy-success.png`
+- Create: `public/terminal-buddy-complete.png`
 - Create: `src/components/TerminalBuddy.test.tsx`
 - Create: `src/components/TerminalBuddy.tsx`
+- Modify: `index.html`
+- Modify: `src/seo.test.ts`
 - Modify: `src/styles.css`
 
-- [ ] **Step 1: Generate the Terminal Buddy bitmap asset**
+- [ ] **Step 1: Generate the Terminal Buddy bitmap assets**
 
-Use the image generation tool to create a transparent PNG and save it to `public/terminal-buddy.png`.
+Use the image generation tool to create a transparent PNG and save it to `public/terminal-buddy.png`. Use that as the favicon/base mascot.
 
 Prompt:
 
@@ -297,7 +304,49 @@ Prompt:
 A tiny friendly command-line mascot named Terminal Buddy for a dark terminal learning app. Blocky cursor-inspired character, compact square proportions, glowing green terminal face, small pixel-like body, transparent background, no text, no letters, no symbols, no watermark, clean edges, suitable at 64px.
 ```
 
-Expected output: `public/terminal-buddy.png` exists and is a transparent PNG. If the tool returns WebP instead, save it as `public/terminal-buddy.webp` and use `/terminal-buddy.webp` in the component.
+Then create five state sprites from the same character:
+
+- `public/terminal-buddy-idle.png`
+- `public/terminal-buddy-hint.png`
+- `public/terminal-buddy-fail.png`
+- `public/terminal-buddy-success.png`
+- `public/terminal-buddy-complete.png`
+
+The variants should keep the same silhouette and change only small expression/accent details. Use green for idle, cyan/yellow for hint, red for fail, bright green for success, and gold for complete.
+
+Expected output: all six PNG files exist, are transparent PNGs, and look like the same mascot. If the image tool returns WebP, save WebP state variants and use matching `.webp` paths consistently.
+
+- [ ] **Step 1a: Add the favicon assertion**
+
+In `src/seo.test.ts`, extend the metadata test:
+
+```ts
+expect(html).toContain('rel="icon" type="image/png" href="/terminal-buddy.png"');
+```
+
+Run:
+
+```bash
+npm run test:run -- src/seo.test.ts
+```
+
+Expected: FAIL until `index.html` links the favicon.
+
+- [ ] **Step 1b: Link the Terminal Buddy favicon**
+
+In `index.html`, add the favicon in the `<head>` near the canonical link:
+
+```html
+<link rel="icon" type="image/png" href="/terminal-buddy.png" />
+```
+
+Run:
+
+```bash
+npm run test:run -- src/seo.test.ts
+```
+
+Expected: PASS.
 
 - [ ] **Step 2: Write failing TerminalBuddy tests**
 
@@ -319,6 +368,7 @@ describe("TerminalBuddy", () => {
     render(<TerminalBuddy hints={hints} hintCount={0} status="idle" onShowHint={onShowHint} />);
 
     expect(screen.getByAltText("Terminal Buddy")).toBeInTheDocument();
+    expect(screen.getByAltText("Terminal Buddy")).toHaveAttribute("src", "/terminal-buddy-idle.png");
     await user.click(screen.getByRole("button", { name: /ask terminal buddy/i }));
 
     expect(onShowHint).toHaveBeenCalledTimes(1);
@@ -340,6 +390,14 @@ describe("TerminalBuddy", () => {
     rerender(<TerminalBuddy hints={hints} hintCount={0} status="success" onShowHint={vi.fn()} />);
 
     expect(screen.getByText(/nice match/i)).toBeInTheDocument();
+    expect(screen.getByAltText("Terminal Buddy")).toHaveAttribute("src", "/terminal-buddy-success.png");
+  });
+
+  it("uses the complete sprite and achievement copy", () => {
+    render(<TerminalBuddy hints={hints} hintCount={0} status="complete" onShowHint={vi.fn()} />);
+
+    expect(screen.getByText(/path complete/i)).toBeInTheDocument();
+    expect(screen.getByAltText("Terminal Buddy")).toHaveAttribute("src", "/terminal-buddy-complete.png");
   });
 });
 ```
@@ -362,11 +420,17 @@ Create `src/components/TerminalBuddy.tsx`:
 interface TerminalBuddyProps {
   hints: string[];
   hintCount: number;
-  status: "idle" | "hint" | "fail" | "success";
+  status: "idle" | "hint" | "fail" | "success" | "complete";
   onShowHint: () => void;
 }
 
-const mascotSrc = "/terminal-buddy.png";
+const mascotSprites: Record<TerminalBuddyProps["status"], string> = {
+  idle: "/terminal-buddy-idle.png",
+  hint: "/terminal-buddy-hint.png",
+  fail: "/terminal-buddy-fail.png",
+  success: "/terminal-buddy-success.png",
+  complete: "/terminal-buddy-complete.png"
+};
 
 export function TerminalBuddy({ hints, hintCount, status, onShowHint }: TerminalBuddyProps) {
   const visibleHints = hints.slice(0, hintCount);
@@ -377,7 +441,7 @@ export function TerminalBuddy({ hints, hintCount, status, onShowHint }: Terminal
   return (
     <aside className={`terminal-buddy is-${status}`} aria-label="Terminal Buddy hints">
       <div className="terminal-buddy-avatar-wrap">
-        <img className="terminal-buddy-avatar" src={mascotSrc} alt="Terminal Buddy" width="64" height="64" />
+        <img className="terminal-buddy-avatar" src={mascotSprites[status]} alt="Terminal Buddy" width="64" height="64" />
       </div>
       <div className="terminal-buddy-panel">
         <p className="terminal-buddy-status">{statusText}</p>
@@ -397,6 +461,10 @@ export function TerminalBuddy({ hints, hintCount, status, onShowHint }: Terminal
 }
 
 function getStatusText(status: TerminalBuddyProps["status"], hintCount: number): string {
+  if (status === "complete") {
+    return "Path complete. Strong regex energy.";
+  }
+
   if (status === "success") {
     return "Nice match. Ready for the next one.";
   }
@@ -481,6 +549,35 @@ Add to `src/styles.css`:
 .terminal-buddy.is-success .terminal-buddy-avatar-wrap {
   border-color: #8bd89f;
 }
+
+.terminal-buddy.is-complete .terminal-buddy-avatar-wrap {
+  border-color: #f4d35e;
+}
+
+.terminal-buddy.is-idle .terminal-buddy-avatar,
+.terminal-buddy.is-hint .terminal-buddy-avatar {
+  animation: terminal-buddy-idle 2.8s ease-in-out infinite;
+}
+
+@keyframes terminal-buddy-idle {
+  0%,
+  100% {
+    transform: translateY(0);
+    filter: drop-shadow(0 0 10px rgba(139, 216, 159, 0.18));
+  }
+
+  50% {
+    transform: translateY(-2px);
+    filter: drop-shadow(0 0 14px rgba(139, 216, 159, 0.3));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .terminal-buddy.is-idle .terminal-buddy-avatar,
+  .terminal-buddy.is-hint .terminal-buddy-avatar {
+    animation: none;
+  }
+}
 ```
 
 - [ ] **Step 6: Run TerminalBuddy tests to verify they pass**
@@ -488,7 +585,7 @@ Add to `src/styles.css`:
 Run:
 
 ```bash
-npm run test:run -- src/components/TerminalBuddy.test.tsx
+npm run test:run -- src/components/TerminalBuddy.test.tsx src/seo.test.ts
 ```
 
 Expected: PASS.
@@ -498,14 +595,7 @@ Expected: PASS.
 Run:
 
 ```bash
-git add public/terminal-buddy.png src/components/TerminalBuddy.test.tsx src/components/TerminalBuddy.tsx src/styles.css
-git commit -m "feat: add terminal buddy hint component"
-```
-
-If the generated asset is WebP:
-
-```bash
-git add public/terminal-buddy.webp src/components/TerminalBuddy.test.tsx src/components/TerminalBuddy.tsx src/styles.css
+git add public/terminal-buddy.png public/terminal-buddy-idle.png public/terminal-buddy-hint.png public/terminal-buddy-fail.png public/terminal-buddy-success.png public/terminal-buddy-complete.png index.html src/seo.test.ts src/components/TerminalBuddy.test.tsx src/components/TerminalBuddy.tsx src/styles.css
 git commit -m "feat: add terminal buddy hint component"
 ```
 

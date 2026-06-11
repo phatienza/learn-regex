@@ -93,6 +93,8 @@ Visual direction:
 
 - Terminal Buddy should feel native to the command-line aesthetic: small, blocky, cursor-inspired, and made for a dark terminal UI.
 - Use a transparent PNG or WebP bitmap asset generated for this project. Do not use ASCII art, emoji, CSS art, handcrafted inline SVG, or placeholder boxes for the final mascot.
+- Use Terminal Buddy as the site favicon so the learning app has a recognizable browser-tab identity.
+- Create separate bitmap sprites for `idle`, `hint`, `fail`, `success`, and `complete` states. The sprites should clearly feel like the same character with small expression/accent changes, not unrelated icons.
 - Keep the mascot small enough that it never competes with the file viewer, command entry, output, or lesson content.
 
 Behavior:
@@ -105,6 +107,7 @@ Behavior:
 - When all hints are shown, the hint control becomes disabled or changes to a quiet `No more hints` state.
 - On failed attempts, Terminal Buddy visually shifts into a helpful state and invites the learner to ask for a hint.
 - On successful attempts, Terminal Buddy shows a subtle success state without blocking the `Next lesson` action.
+- When the beginner path is completed, Terminal Buddy uses a distinct complete/achievement sprite and short celebratory status copy.
 
 State boundaries:
 
@@ -112,6 +115,7 @@ State boundaries:
 - Do not add new hint content in this UI pass.
 - Do not persist mascot state separately from existing lesson progress.
 - Reset visible mascot hint state when changing lessons, advancing, or resetting progress.
+- Derive mascot display state from existing UI state: completed path wins over success, then failure, then open hints, then idle.
 
 ## Terminal Feel
 
@@ -120,7 +124,8 @@ Add subtle interaction cues:
 - A blinking cursor or caret treatment inside the command prompt while the input is focused.
 - Gentle transitions for Learn collapse and Lab reveal.
 - Slight output appearance animation when example or lab output is produced.
-- Small Terminal Buddy idle, hint, failure, and success states that are subtle and quick.
+- Small Terminal Buddy idle, hint, failure, success, and completion states that are subtle and quick.
+- Terminal Buddy should have an idle animation, such as a soft bob, screen glow, or blink. It should feel alive without becoming distracting.
 
 Animations should be quick and functional. Use `prefers-reduced-motion` to disable or reduce transitions and cursor blinking for users who request less motion.
 
