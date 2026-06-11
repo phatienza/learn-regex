@@ -615,7 +615,7 @@ import { useEffect, useRef, useState } from "react";
 import { ArrowRight, CheckCircle2, ChevronDown, ChevronUp, Play, RotateCcw, XCircle } from "lucide-react";
 import type { AttemptResult, Lesson } from "../domain/types";
 import { HighlightedText } from "./HighlightedText";
-import { TerminalBuddy } from "./TerminalBuddy";
+import { TerminalBuddy, type TerminalBuddyStatus } from "./TerminalBuddy";
 ```
 
 Inside the component, after `visibleHints`:
@@ -653,7 +653,15 @@ Inside the component, after `visibleHints`:
     onRun();
   }
 
-  const buddyStatus = isPass ? "success" : result?.status === "fail" ? "fail" : hintCount > 0 ? "hint" : "idle";
+  const buddyStatus: TerminalBuddyStatus = isComplete
+    ? "complete"
+    : isPass
+      ? "success"
+      : result?.status === "fail"
+        ? "fail"
+        : hintCount > 0
+          ? "hint"
+          : "idle";
 ```
 
 - [ ] **Step 2: Replace Learn rendering with collapsible Learn panel**
