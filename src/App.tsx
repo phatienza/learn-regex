@@ -15,6 +15,7 @@ export function App() {
   const [progress, setProgress] = useState<LearnerProgress>(() => loadProgress(firstLesson.id));
   const [command, setCommand] = useState("");
   const [result, setResult] = useState<AttemptResult | undefined>();
+  const [exampleResult, setExampleResult] = useState<AttemptResult | undefined>();
   const [hintCount, setHintCount] = useState(0);
 
   const currentLesson = useMemo(
@@ -37,6 +38,10 @@ export function App() {
     setResult(evaluateAttempt(command, currentLesson, currentFile));
   }
 
+  function runExample() {
+    setExampleResult(evaluateAttempt(currentLesson.example.command, currentLesson, currentFile));
+  }
+
   function advanceLesson() {
     const nextLesson = lessons[Math.min(currentLessonIndex + 1, lessons.length - 1)];
     const nextProgress = completeLesson(progress, currentLesson.id, nextLesson.id);
@@ -45,6 +50,7 @@ export function App() {
     saveProgress(nextProgress);
     setCommand("");
     setResult(undefined);
+    setExampleResult(undefined);
     setHintCount(0);
   }
 
@@ -58,6 +64,7 @@ export function App() {
     saveProgress(nextProgress);
     setCommand("");
     setResult(undefined);
+    setExampleResult(undefined);
     setHintCount(0);
   }
 
@@ -65,6 +72,7 @@ export function App() {
     setProgress(resetProgress(firstLesson.id));
     setCommand("");
     setResult(undefined);
+    setExampleResult(undefined);
     setHintCount(0);
   }
 
@@ -81,6 +89,7 @@ export function App() {
         <FileViewer file={currentFile} matchSpans={result?.matchSpans ?? []} />
         <TerminalPanel
           command={command}
+          exampleResult={exampleResult}
           filename={currentFile.filename}
           hintCount={hintCount}
           isComplete={isComplete}
@@ -90,10 +99,18 @@ export function App() {
           onCommandChange={setCommand}
           onReset={resetAllProgress}
           onRun={runCommand}
+          onRunExample={runExample}
           onShowHint={() => setHintCount((count) => Math.min(count + 1, currentLesson.hints.length))}
           result={result}
         />
       </div>
+
+      <footer className="site-footer">
+        <span>Built by </span>
+        <a href="https://paulatienza.dev/" rel="author external">
+          Paul Henry Atienza
+        </a>
+      </footer>
     </main>
   );
 }

@@ -32,7 +32,7 @@ describe("executeGrep", () => {
     ]);
   });
 
-  it("supports anchors, dot, character sets, POSIX classes, repetition, and exact shapes", () => {
+  it("supports anchors, dot, character sets, shorthand classes, repetition, and exact shapes", () => {
     expect(
       executeGrep(
         {
@@ -48,8 +48,8 @@ describe("executeGrep", () => {
     expect(
       executeGrep(
         {
-          raw: "grep -E 'api-[[:digit:]]+' sample.log",
-          pattern: "api-[[:digit:]]+",
+          raw: "grep -E 'api-\\d+' sample.log",
+          pattern: "api-\\d+",
           filename: "sample.log",
           flags: { extended: true, ignoreCase: false, lineNumber: false, onlyMatching: true }
         },
@@ -60,8 +60,8 @@ describe("executeGrep", () => {
     expect(
       executeGrep(
         {
-          raw: "grep -E 'v[[:digit:]]\\.[[:digit:]]{2}\\.[[:digit:]]' sample.log",
-          pattern: "v[[:digit:]]\\.[[:digit:]]{2}\\.[[:digit:]]",
+          raw: "grep -E 'v\\d\\.\\d{2}\\.\\d' sample.log",
+          pattern: "v\\d\\.\\d{2}\\.\\d",
           filename: "sample.log",
           flags: { extended: true, ignoreCase: false, lineNumber: false, onlyMatching: true }
         },
@@ -70,11 +70,77 @@ describe("executeGrep", () => {
     ).toEqual(["v1.24.0"]);
   });
 
+  it("supports beginner shorthand classes and escaped literal dots without POSIX translation", () => {
+    const versionResult = executeGrep(
+      {
+        raw: "grep -E 'v\\d\\.\\d\\d\\.\\d' sample.log",
+        pattern: "v\\d\\.\\d\\d\\.\\d",
+        filename: "sample.log",
+        flags: { extended: true, ignoreCase: false, lineNumber: false, onlyMatching: true }
+      },
+      {
+        id: "sample",
+        filename: "sample.log",
+        lines: ["release v1.24.0", "release v1-24-0", "release v1x24x0"]
+      }
+    );
+
+    expect(versionResult.outputLines.map((line) => line.displayText)).toEqual(["v1.24.0"]);
+
+    const classResult = executeGrep(
+      {
+        raw: "grep -E '\\D\\d\\s' sample.log",
+        pattern: "\\D\\d\\s",
+        filename: "sample.log",
+        flags: { extended: true, ignoreCase: false, lineNumber: false, onlyMatching: true }
+      },
+      {
+        id: "sample",
+        filename: "sample.log",
+        lines: ["A1 ready", "11 ready", "B2 ready"]
+      }
+    );
+
+    expect(classResult.outputLines.map((line) => line.displayText)).toEqual(["A1 ", "B2 "]);
+
+    const nonSpaceResult = executeGrep(
+      {
+        raw: "grep -E '\\S+' sample.log",
+        pattern: "\\S+",
+        filename: "sample.log",
+        flags: { extended: true, ignoreCase: false, lineNumber: false, onlyMatching: true }
+      },
+      {
+        id: "sample",
+        filename: "sample.log",
+        lines: ["one two"]
+      }
+    );
+
+    expect(nonSpaceResult.outputLines.map((line) => line.displayText)).toEqual(["one", "two"]);
+
+    const oldPosixResult = executeGrep(
+      {
+        raw: "grep '[[:digit:]]' sample.log",
+        pattern: "[[:digit:]]",
+        filename: "sample.log",
+        flags: { extended: false, ignoreCase: false, lineNumber: false, onlyMatching: true }
+      },
+      {
+        id: "sample",
+        filename: "sample.log",
+        lines: ["ticket 7"]
+      }
+    );
+
+    expect(oldPosixResult.outputLines.map((line) => line.displayText)).toEqual([]);
+  });
+
   it("supports alternation, line numbers, only-matching output, and group spans", () => {
     const result = executeGrep(
       {
-        raw: "grep -Eno '(api|web)-[[:digit:]]+' sample.log",
-        pattern: "(api|web)-[[:digit:]]+",
+        raw: "grep -Eno '(api|web)-\\d+' sample.log",
+        pattern: "(api|web)-\\d+",
         filename: "sample.log",
         flags: { extended: true, ignoreCase: false, lineNumber: true, onlyMatching: true }
       },
@@ -85,6 +151,11 @@ describe("executeGrep", () => {
       "1:api-12",
       "2:web-7",
       "3:api-42"
+    ]);
+    expect(result.outputLines.map((line) => line.lineNumberSpans)).toEqual([
+      [{ start: 0, end: 2 }],
+      [{ start: 0, end: 2 }],
+      [{ start: 0, end: 2 }]
     ]);
     expect(result.matchSpans.map((span) => span.groups)).toEqual([
       [{ start: 5, end: 8 }],
@@ -101,6 +172,10 @@ describe("evaluateAttempt", () => {
     title: "Literal matches",
     concept: "Literal text",
     explanation: "Find the ERROR line.",
+    example: {
+      command: "grep 'INFO' sample.log",
+      explanation: "Example text for the test fixture."
+    },
     practiceFileId: "sample",
     prompt: "Find ERROR.",
     hints: ["Search for the exact word.", "Use grep 'ERROR' sample.log"],

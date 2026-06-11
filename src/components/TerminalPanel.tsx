@@ -7,11 +7,13 @@ interface TerminalPanelProps {
   filename: string;
   command: string;
   result?: AttemptResult;
+  exampleResult?: AttemptResult;
   hintCount: number;
   isLastLesson: boolean;
   isComplete: boolean;
   onCommandChange: (command: string) => void;
   onRun: () => void;
+  onRunExample: () => void;
   onShowHint: () => void;
   onAdvance: () => void;
   onReset: () => void;
@@ -22,11 +24,13 @@ export function TerminalPanel({
   filename,
   command,
   result,
+  exampleResult,
   hintCount,
   isLastLesson,
   isComplete,
   onCommandChange,
   onRun,
+  onRunExample,
   onShowHint,
   onAdvance,
   onReset
@@ -47,9 +51,50 @@ export function TerminalPanel({
         </button>
       </div>
 
+      <div className="learn-block">
+        <span>Learn</span>
+        <p>{lesson.example.explanation}</p>
+        <div className="example-command">
+          <div>
+            <span>Example command</span>
+            <code>$ {lesson.example.command}</code>
+          </div>
+          <button className="secondary-button" onClick={onRunExample} type="button">
+            <Play aria-hidden="true" size={17} />
+            Run example
+          </button>
+        </div>
+        {exampleResult ? (
+          <div className="example-output" aria-live="polite">
+            {exampleResult.outputLines.length > 0 ? (
+              exampleResult.outputLines.map((line, index) => (
+                <pre className="example-output-line" key={`${line.lineNumber}-${index}`}>
+                  <HighlightedText
+                    text={line.displayText}
+                    spans={line.spans}
+                    groups={line.groups}
+                    lineNumbers={line.lineNumberSpans}
+                  />
+                </pre>
+              ))
+            ) : (
+              <p className="terminal-empty">No example lines matched.</p>
+            )}
+          </div>
+        ) : null}
+      </div>
+
       <div className="lesson-prompt">
-        <span>Goal</span>
+        <span>Lab</span>
         <p>{lesson.prompt}</p>
+        <div className="expected-output">
+          <span>Expected output</span>
+          {lesson.expected.outputLines.map((line) => (
+            <pre className="expected-output-line" key={line}>
+              {line}
+            </pre>
+          ))}
+        </div>
       </div>
 
       <form
@@ -85,7 +130,12 @@ export function TerminalPanel({
           result.outputLines.length > 0 ? (
             result.outputLines.map((line, index) => (
               <pre className="terminal-output-line" key={`${line.lineNumber}-${index}`}>
-                <HighlightedText text={line.displayText} spans={line.spans} groups={line.groups} />
+                <HighlightedText
+                  text={line.displayText}
+                  spans={line.spans}
+                  groups={line.groups}
+                  lineNumbers={line.lineNumberSpans}
+                />
               </pre>
             ))
           ) : (

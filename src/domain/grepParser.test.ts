@@ -20,10 +20,10 @@ describe("parseGrepCommand", () => {
   });
 
   it("parses supported grep flags in separate or combined form", () => {
-    expect(parseGrepCommand('grep -E -i -n -o "[[:digit:]]+" data.csv')).toMatchObject({
+    expect(parseGrepCommand('grep -E -i -n -o "\\d+" data.csv')).toMatchObject({
       ok: true,
       command: {
-        pattern: "[[:digit:]]+",
+        pattern: "\\d+",
         filename: "data.csv",
         flags: {
           extended: true,

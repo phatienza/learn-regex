@@ -28,7 +28,8 @@ export const practiceFiles: PracticeFile[] = [
       "GET /api/users",
       "POST /api/users",
       "GET /health",
-      "DELETE /api/users/42"
+      "TRACE retry GET /health",
+      "POST /reports?method=GET"
     ]
   },
   {
@@ -37,8 +38,9 @@ export const practiceFiles: PracticeFile[] = [
     lines: [
       "SEARCH_ENABLED=true",
       "BILLING_SYNC=false",
-      "CACHE_WARMUP=true",
-      "DEBUG_MODE=false"
+      "CACHE_WARMUP=true # temporary",
+      "DEBUG_MODE=false",
+      "AUDIT_MODE=true"
     ]
   },
   {
@@ -49,6 +51,16 @@ export const practiceFiles: PracticeFile[] = [
       "release v1-2-0",
       "release v1.20",
       "release v2.2.0"
+    ]
+  },
+  {
+    id: "version-notes",
+    filename: "version-notes.txt",
+    lines: [
+      "release v1.2.0 passed smoke tests",
+      "release v1-2-0 used a draft tag",
+      "release v1x2x0 is not a version",
+      "release v2.10.4 passed smoke tests"
     ]
   },
   {
@@ -65,6 +77,39 @@ export const practiceFiles: PracticeFile[] = [
       "AA missing digit",
       "C3 reboot cache",
       "4D backwards code"
+    ]
+  },
+  {
+    id: "request-ids",
+    filename: "request-ids.txt",
+    lines: ["job-7", "job-42", "job-314", "job-", "job-A"]
+  },
+  {
+    id: "log-shapes",
+    filename: "log-shapes.txt",
+    lines: ["lg", "log", "loog", "looog", "lag"]
+  },
+  {
+    id: "alert-codes",
+    filename: "alert-codes.log",
+    lines: [
+      "ERR-12 api timeout",
+      "ERR1234 web latency",
+      "ERR--44 double dash",
+      "ERRX55 bad prefix",
+      "WARN-44 queue depth"
+    ]
+  },
+  {
+    id: "job-codes",
+    filename: "job-codes.log",
+    lines: [
+      "JOB-7 queued",
+      "JOB-42 queued",
+      "JOB-314 done",
+      "JOB-9001 done",
+      "JOB-12345 too long",
+      "TASK-55 ignored"
     ]
   },
   {
@@ -95,13 +140,20 @@ export const practiceFiles: PracticeFile[] = [
       "api timeout after 30s",
       "worker job completed",
       "web latency above threshold",
-      "db replica caught up"
+      "db replica caught up",
+      "api retry succeeded"
     ]
   },
   {
     id: "targets",
     filename: "targets.txt",
-    lines: ["api-12 healthy", "web-7 degraded", "job-3 queued", "api-42 failed"]
+    lines: [
+      "api-12 healthy",
+      "web-7 degraded",
+      "api gateway online",
+      "job-3 queued",
+      "api-42 failed"
+    ]
   },
   {
     id: "incident",

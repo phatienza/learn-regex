@@ -13,12 +13,18 @@ export interface ExpectedMatch {
   text: string;
 }
 
+export interface LessonExample {
+  command: string;
+  explanation: string;
+}
+
 export interface Lesson {
   id: LessonId;
   order: number;
   title: string;
   concept: string;
   explanation: string;
+  example: LessonExample;
   practiceFileId: PracticeFileId;
   prompt: string;
   hints: string[];
@@ -75,6 +81,7 @@ export interface OutputLine {
   displayText: string;
   spans: TextSpan[];
   groups: TextSpan[];
+  lineNumberSpans: TextSpan[];
 }
 
 export interface AttemptResult {

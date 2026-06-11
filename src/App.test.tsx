@@ -16,12 +16,36 @@ describe("App", () => {
     expect(screen.getByRole("heading", { name: /learn grep regex/i })).toBeInTheDocument();
   });
 
+  it("shows Paul Henry Atienza as the app author", () => {
+    render(<App />);
+
+    expect(screen.getByText(/built by/i)).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /paul henry atienza/i })).toHaveAttribute(
+      "href",
+      "https://paulatienza.dev/"
+    );
+  });
+
   it("lets a learner complete the first lesson and advance with saved progress", async () => {
     const user = userEvent.setup();
     render(<App />);
 
     expect(screen.getByText("app.log")).toBeInTheDocument();
-    expect(screen.getByText("ERROR payment worker failed")).toBeInTheDocument();
+    expect(screen.getByText("Learn")).toBeInTheDocument();
+    expect(screen.getByText(/example command/i)).toBeInTheDocument();
+    expect(screen.getByText(/expected output/i)).toBeInTheDocument();
+    expect(screen.getAllByText("ERROR payment worker failed")).toHaveLength(2);
+
+    await user.click(screen.getByRole("button", { name: /run example/i }));
+
+    expect(
+      screen.getByText((_content, element) => {
+        return (
+          element?.classList.contains("example-output-line") === true &&
+          element.textContent === "INFO boot sequence complete"
+        );
+      })
+    ).toBeInTheDocument();
 
     await user.type(screen.getByLabelText(/grep command/i), "grep 'ERROR' app.log");
     await user.click(screen.getByRole("button", { name: /run command/i }));

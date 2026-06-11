@@ -223,12 +223,21 @@ h2 {
   cursor: pointer;
 }
 
+.learn-block,
 .lesson-prompt {
   border-bottom: 1px solid #26312c;
   padding: 16px;
 }
 
+.learn-block {
+  display: grid;
+  gap: 12px;
+  background: #111511;
+}
+
 .lesson-prompt span,
+.learn-block > span,
+.example-command span,
 .command-form label,
 .terminal-output-title {
   display: block;
@@ -239,10 +248,66 @@ h2 {
   text-transform: uppercase;
 }
 
+.learn-block p,
 .lesson-prompt p {
   margin-bottom: 0;
   color: #f4f6ef;
   line-height: 1.5;
+}
+
+.expected-output {
+  margin-top: 14px;
+  overflow-x: auto;
+  border: 1px solid #26312c;
+  border-radius: 6px;
+  padding: 10px 12px;
+  background: #0d100e;
+}
+
+.expected-output span {
+  color: #8bd89f;
+}
+
+.expected-output-line {
+  margin: 0 0 8px;
+  color: #dbe7df;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: 0.86rem;
+  line-height: 1.5;
+  white-space: pre;
+}
+
+.expected-output-line:last-child {
+  margin-bottom: 0;
+}
+
+.example-command {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: end;
+}
+
+.example-command code {
+  display: block;
+  width: 100%;
+  overflow-x: auto;
+  border: 1px solid #334139;
+  border-radius: 6px;
+  padding: 11px 12px;
+  color: #dbe7df;
+  background: #0b0f0c;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: 0.88rem;
+  white-space: pre;
+}
+
+.example-output {
+  overflow-x: auto;
+  border: 1px solid #26312c;
+  border-radius: 6px;
+  padding: 10px 12px;
+  background: #0d100e;
 }
 
 .command-form {
@@ -317,6 +382,7 @@ h2 {
 }
 
 .terminal-output-line,
+.example-output-line,
 .terminal-empty {
   margin: 0 0 8px;
   color: #dbe7df;
@@ -341,6 +407,11 @@ h2 {
   color: #170f03;
   background: #fbbf24;
   box-shadow: inset 0 -2px 0 rgba(125, 211, 252, 0.9);
+}
+
+.text-highlight-line-number {
+  color: #04131a;
+  background: #7dd3fc;
 }
 
 .feedback {
@@ -389,6 +460,25 @@ h2 {
   color: #fbbf24;
 }
 
+.site-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
+  margin-top: 18px;
+  color: #9fb0a6;
+  font-size: 0.88rem;
+  line-height: 1.4;
+}
+
+.site-footer a {
+  color: #8bd89f;
+  text-decoration: none;
+}
+
+.site-footer a:hover {
+  text-decoration: underline;
+}
+
 .sr-only {
   position: absolute;
   width: 1px;
@@ -413,6 +503,10 @@ h2 {
   .file-viewer {
     min-height: 280px;
     max-height: 46vh;
+  }
+
+  .site-footer {
+    justify-content: flex-start;
   }
 }
 
@@ -440,6 +534,10 @@ h2 {
 
   .command-row {
     grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .example-command {
+    grid-template-columns: 1fr;
   }
 
   .command-row .primary-button {

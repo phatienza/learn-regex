@@ -6,7 +6,7 @@ The app behaves like a small terminal workbench: a read-only sample file stays v
 
 ## Features
 
-- 12 beginner regex lessons.
+- 17 beginner regex lessons.
 - Practical sample files based on logs, config files, CSV rows, routes, versions, and incident reports.
 - Safe simulated `grep` parser instead of real shell execution.
 - Output-based validation, so equivalent commands can pass when they produce the expected result.
@@ -22,20 +22,27 @@ The app behaves like a small terminal workbench: a read-only sample file stays v
 3. Start anchor `^`.
 4. End anchor `$`.
 5. Any character `.`.
-6. Character sets and ranges.
-7. POSIX classes such as `[[:digit:]]`, `[[:alpha:]]`, and `[[:space:]]`.
-8. Repetition with `+`, `*`, `?`, and `{2,4}` using `grep -E`.
-9. Exact shapes such as IDs, dates, and versions.
-10. Alternation with `|`.
-11. Groups such as `(api|web)-[[:digit:]]+`.
-12. Capstone log search with a preview of `> findings.txt`.
+6. Escaping special characters with `\.`
+7. Character sets and ranges.
+8. Shorthand classes such as `\d`, `\s`, `\D`, and `\S`.
+9. One or more with `+` using `grep -E`.
+10. Zero or more with `*` using `grep -E`.
+11. Optional pieces with `?` using `grep -E`.
+12. Counted repetition with `{2,4}` using `grep -E`.
+13. Combined repetition.
+14. Exact shapes such as IDs, dates, and versions.
+15. Alternation with `|`.
+16. Groups such as `(api|web)-\d+`.
+17. Capstone line-number search with `-n` and a preview of `> findings.txt`.
 
 ## Supported Grep Subset
 
-The app simulates a focused beginner-friendly subset:
+The app simulates a focused beginner-friendly modern regex subset:
 
 - Commands must start with `grep`.
 - Supported flags: `-E`, `-i`, `-n`, and `-o`.
+- Supported shorthand classes: `\d`, `\s`, `\D`, and `\S`.
+- Escaped special characters such as `\.` can be used for literal matching.
 - Quoted patterns are supported.
 - A sample filename argument is required.
 - `> findings.txt` is supported only in the capstone lesson.

@@ -50,7 +50,8 @@ export function executeGrep(command: ParsedGrepCommand, file: PracticeFile): Gre
           start: prefix.length + group.start,
           end: prefix.length + group.end
         }))
-      )
+      ),
+      lineNumberSpans: prefix ? [{ start: 0, end: prefix.length }] : []
     });
   });
 
@@ -113,7 +114,7 @@ export function evaluateAttempt(
 }
 
 function buildRegex(command: ParsedGrepCommand): RegExp {
-  const pattern = translatePosixClasses(command.pattern);
+  const pattern = normalizeBeginnerPattern(command.pattern);
   const flags = `g${command.flags.ignoreCase ? "i" : ""}`;
 
   try {
@@ -123,11 +124,8 @@ function buildRegex(command: ParsedGrepCommand): RegExp {
   }
 }
 
-function translatePosixClasses(pattern: string): string {
-  return pattern
-    .replace(/\[\[:digit:\]\]/g, "[0-9]")
-    .replace(/\[\[:alpha:\]\]/g, "[A-Za-z]")
-    .replace(/\[\[:space:\]\]/g, "\\s");
+function normalizeBeginnerPattern(pattern: string): string {
+  return pattern;
 }
 
 function collectLineMatches(regex: RegExp, line: string, lineNumber: number): MatchSpan[] {
@@ -191,7 +189,8 @@ function formatOnlyMatchingOutput(command: ParsedGrepCommand, match: MatchSpan):
     groups: match.groups.map((group) => ({
       start: prefix.length + group.start - match.start,
       end: prefix.length + group.end - match.start
-    }))
+    })),
+    lineNumberSpans: prefix ? [{ start: 0, end: prefix.length }] : []
   };
 }
 
