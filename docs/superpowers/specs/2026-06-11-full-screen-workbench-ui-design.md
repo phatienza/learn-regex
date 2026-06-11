@@ -15,6 +15,7 @@ The UI change should make each lesson feel less like a long scrolling page and m
 - Keep a clear way to reopen Learn without losing lab state.
 - Add text-editor affordances to the sample file viewer so it feels like a read-only editor.
 - Make the command entry feel like a real terminal prompt instead of a regular text input.
+- Add a compact Terminal Buddy mascot that owns the hint experience.
 - Add subtle terminal life through cursor animation, transcript behavior, and panel transitions.
 
 ## Non-Goals
@@ -23,6 +24,7 @@ The UI change should make each lesson feel less like a long scrolling page and m
 - Do not add accounts, backend persistence, real shell execution, or deployment changes.
 - Do not turn the app into a marketing page.
 - Do not introduce heavy decorative animation that distracts from learning.
+- Do not make the mascot the primary learning surface. It supports hints; the lesson and lab remain the main experience.
 
 ## Layout
 
@@ -83,6 +85,34 @@ When the learner changes lessons, resets progress, or advances:
 - The panel returns to Learn mode.
 - Example output, command text, result feedback, and hint count reset according to existing lesson-change behavior.
 
+## Terminal Buddy Mascot
+
+Add a compact mascot named Terminal Buddy to make hints feel more alive.
+
+Visual direction:
+
+- Terminal Buddy should feel native to the command-line aesthetic: small, blocky, cursor-inspired, and made for a dark terminal UI.
+- Use a transparent PNG or WebP bitmap asset generated for this project. Do not use ASCII art, emoji, CSS art, handcrafted inline SVG, or placeholder boxes for the final mascot.
+- Keep the mascot small enough that it never competes with the file viewer, command entry, output, or lesson content.
+
+Behavior:
+
+- Replace the plain `Show hint` button with a Terminal Buddy hint control.
+- Before any hint is shown, Terminal Buddy sits near the terminal actions with a concise affordance such as `Ask Buddy`.
+- Clicking the mascot or its hint control reveals the next available hint.
+- Hints appear in a compact terminal-style speech bubble connected to the mascot.
+- Repeated clicks reveal the existing progressive hints one at a time.
+- When all hints are shown, the hint control becomes disabled or changes to a quiet `No more hints` state.
+- On failed attempts, Terminal Buddy visually shifts into a helpful state and invites the learner to ask for a hint.
+- On successful attempts, Terminal Buddy shows a subtle success state without blocking the `Next lesson` action.
+
+State boundaries:
+
+- Keep using the existing lesson `hints` array and `hintCount`.
+- Do not add new hint content in this UI pass.
+- Do not persist mascot state separately from existing lesson progress.
+- Reset visible mascot hint state when changing lessons, advancing, or resetting progress.
+
 ## Terminal Feel
 
 Add subtle interaction cues:
@@ -90,6 +120,7 @@ Add subtle interaction cues:
 - A blinking cursor or caret treatment inside the command prompt while the input is focused.
 - Gentle transitions for Learn collapse and Lab reveal.
 - Slight output appearance animation when example or lab output is produced.
+- Small Terminal Buddy idle, hint, failure, and success states that are subtle and quick.
 
 Animations should be quick and functional. Use `prefers-reduced-motion` to disable or reduce transitions and cursor blinking for users who request less motion.
 
@@ -117,20 +148,25 @@ Use this UI state:
 
 - `hasRunExample`: derive from whether `exampleResult` exists for the current lesson.
 - `isLearnOpen`: local panel state that controls whether Learn is expanded after the example has been run.
+- `hintCount`: remains parent-owned existing state.
 
 The parent `App` already owns command, result, example result, progress, and lesson-change resets. Keep that boundary. `TerminalPanel` should manage only local display state and input focus:
 
 - Reset `isLearnOpen` when the lesson id changes.
 - Collapse Learn after `exampleResult` appears.
 - Focus the command input with a `ref` after `Run example`.
-- Store the last submitted lab command only if needed to echo it in the terminal transcript.
+- Store the last submitted lab command so the terminal transcript can echo it.
+- Introduce a focused mascot/hint component if it keeps `TerminalPanel` from growing too large.
 
 ## Accessibility
 
 - The Learn toggle must be a real button with clear accessible text.
+- The Terminal Buddy hint control must be a real button with accessible text that names the action.
+- The mascot image needs useful alt text or should be hidden from assistive tech if the adjacent button text already names it.
 - The Lab reveal should not trap focus.
 - After `Run example`, focus should move to the command input intentionally.
 - Example and lab output should keep `aria-live="polite"`.
+- Newly revealed hints should be announced politely.
 - Motion should respect `prefers-reduced-motion`.
 - Hidden Lab content should not create confusing tab stops before it is available.
 
@@ -145,6 +181,9 @@ Add focused coverage for:
 - Existing first-lesson completion flow still works after the UI state changes.
 - The command area visually reads as a terminal prompt rather than a standalone text field.
 - Submitted commands echo in the terminal output transcript.
+- Terminal Buddy reveals progressive hints using the existing hint order.
+- Terminal Buddy reaches a disabled or complete state when all hints are visible.
+- Failed and successful attempts can update Terminal Buddy state without blocking command entry or lesson advancement.
 
 Continue to run the full unit test suite and production build before completion. Use browser validation for desktop and mobile viewports because this is a layout and interaction change.
 
@@ -158,5 +197,7 @@ Continue to run the full unit test suite and production build before completion.
 - The learner can reopen Learn at any time after the example runs.
 - The command entry looks and behaves like an inline terminal prompt, not a boxed text input.
 - The output area includes the submitted command and result as a terminal-like transcript.
+- Terminal Buddy replaces the plain hint button and shows hints in a compact terminal-style bubble.
+- Terminal Buddy supports idle, hint, failed-attempt, and success states without distracting from the lab.
 - Cursor animation and transitions make the page feel alive without making it noisy.
 - Desktop and mobile layouts remain readable with no overlapping text or controls.
