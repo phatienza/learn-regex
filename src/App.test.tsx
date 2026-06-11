@@ -4,6 +4,15 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { App } from "./App";
 import { PROGRESS_STORAGE_KEY } from "./storage/progress";
 
+function expectAbsentOrNotVisible(element: HTMLElement | null) {
+  if (element === null) {
+    expect(element).not.toBeInTheDocument();
+    return;
+  }
+
+  expect(element).not.toBeVisible();
+}
+
 describe("App", () => {
   beforeEach(() => {
     localStorage.clear();
@@ -31,9 +40,9 @@ describe("App", () => {
 
     expect(screen.getByText("Learn")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /run example/i })).toBeInTheDocument();
-    expect(screen.queryByText("Lab")).not.toBeInTheDocument();
-    expect(screen.queryByLabelText(/grep command/i)).not.toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: /next lesson/i })).not.toBeInTheDocument();
+    expectAbsentOrNotVisible(screen.queryByText("Lab"));
+    expectAbsentOrNotVisible(screen.queryByLabelText(/grep command/i));
+    expectAbsentOrNotVisible(screen.queryByRole("button", { name: /next lesson/i, hidden: true }));
   });
 
   it("running the example reveals the lab, collapses learn, and focuses the command prompt", async () => {
@@ -44,9 +53,9 @@ describe("App", () => {
 
     expect(screen.getByText("Lab")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /show learn/i })).toBeInTheDocument();
-    expect(
+    expectAbsentOrNotVisible(
       screen.queryByText("Literal text has no special regex meaning. This example finds lines that contain INFO.")
-    ).not.toBeInTheDocument();
+    );
     expect(screen.getByLabelText(/grep command/i)).toHaveFocus();
   });
 
@@ -72,7 +81,7 @@ describe("App", () => {
     expect(screen.getByText("app.log")).toBeInTheDocument();
     expect(screen.getByText("Learn")).toBeInTheDocument();
     expect(screen.getByText(/example command/i)).toBeInTheDocument();
-    expect(screen.queryByText(/expected output/i)).not.toBeInTheDocument();
+    expectAbsentOrNotVisible(screen.queryByText(/expected output/i));
 
     await user.click(screen.getByRole("button", { name: /run example/i }));
 
@@ -102,7 +111,7 @@ describe("App", () => {
     await user.click(screen.getByRole("button", { name: /next lesson/i }));
 
     expect(screen.getByRole("heading", { name: /ignore case/i })).toBeInTheDocument();
-    expect(screen.queryByText("Lab")).not.toBeInTheDocument();
+    expectAbsentOrNotVisible(screen.queryByText("Lab"));
     expect(window.scrollTo).toHaveBeenLastCalledWith({ top: 0 });
     expect(JSON.parse(localStorage.getItem(PROGRESS_STORAGE_KEY) ?? "{}")).toMatchObject({
       currentLessonId: "case-insensitive",
