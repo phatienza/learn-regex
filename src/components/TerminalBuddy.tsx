@@ -1,6 +1,6 @@
-type TerminalBuddyStatus = "idle" | "hint" | "fail" | "success" | "complete";
+export type TerminalBuddyStatus = "idle" | "hint" | "fail" | "success" | "complete";
 
-interface TerminalBuddyProps {
+export interface TerminalBuddyProps {
   hints: string[];
   hintCount: number;
   status: TerminalBuddyStatus;
@@ -36,8 +36,9 @@ function getStatusCopy(status: TerminalBuddyStatus, hintCount: number) {
 }
 
 export function TerminalBuddy({ hints, hintCount, status, onShowHint }: TerminalBuddyProps) {
-  const visibleHints = hints.slice(0, hintCount);
-  const hasMoreHints = hintCount < hints.length;
+  const revealedHintCount = Math.min(Math.max(0, hintCount), hints.length);
+  const visibleHints = hints.slice(0, revealedHintCount);
+  const hasMoreHints = revealedHintCount < hints.length;
   const buttonLabel = hasMoreHints ? "Ask Terminal Buddy for a hint" : "No more hints from Terminal Buddy";
 
   return (
@@ -53,15 +54,13 @@ export function TerminalBuddy({ hints, hintCount, status, onShowHint }: Terminal
       </div>
 
       <div className="terminal-buddy-panel">
-        <p className="terminal-buddy-status">{getStatusCopy(status, hintCount)}</p>
+        <p className="terminal-buddy-status">{getStatusCopy(status, revealedHintCount)}</p>
 
-        {visibleHints.length > 0 ? (
-          <ol className="terminal-buddy-hints" aria-live="polite">
-            {visibleHints.map((hint) => (
-              <li key={hint}>{hint}</li>
-            ))}
-          </ol>
-        ) : null}
+        <ol className="terminal-buddy-hints" aria-live="polite" aria-atomic="false">
+          {visibleHints.map((hint, index) => (
+            <li key={`${index}-${hint}`}>{hint}</li>
+          ))}
+        </ol>
 
         <button
           aria-label={buttonLabel}
