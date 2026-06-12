@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { FileViewer } from "./components/FileViewer";
 import { LessonHeader } from "./components/LessonHeader";
+import { TerminalBuddy, type TerminalBuddyStatus } from "./components/TerminalBuddy";
 import { TerminalPanel } from "./components/TerminalPanel";
 import { lessons } from "./content/lessons";
 import { findPracticeFile } from "./content/practiceFiles";
@@ -26,6 +27,16 @@ export function App() {
   const currentLessonIndex = lessons.findIndex((lesson) => lesson.id === currentLesson.id);
   const isLastLesson = currentLessonIndex === lessons.length - 1;
   const isComplete = lessons.every((lesson) => progress.completedLessonIds.includes(lesson.id));
+  const isPass = result?.status === "pass";
+  const buddyStatus: TerminalBuddyStatus = isComplete
+    ? "complete"
+    : isPass
+      ? "success"
+      : result?.status === "fail"
+        ? "fail"
+        : hintCount > 0
+          ? "hint"
+          : "idle";
 
   useEffect(() => {
     window.scrollTo({ top: 0 });
@@ -85,13 +96,21 @@ export function App() {
         progress={progress}
       />
 
+      <TerminalBuddy
+        feedback={result?.feedback}
+        hints={currentLesson.hints}
+        hintCount={hintCount}
+        onShowHint={() => setHintCount((count) => Math.min(count + 1, currentLesson.hints.length))}
+        progressLabel={`Lesson ${currentLesson.order} of ${lessons.length}`}
+        status={buddyStatus}
+      />
+
       <div className="workbench-layout">
         <FileViewer file={currentFile} matchSpans={result?.matchSpans ?? []} />
         <TerminalPanel
           command={command}
           exampleResult={exampleResult}
           filename={currentFile.filename}
-          hintCount={hintCount}
           isComplete={isComplete}
           isLastLesson={isLastLesson}
           lesson={currentLesson}
@@ -100,7 +119,6 @@ export function App() {
           onReset={resetAllProgress}
           onRun={runCommand}
           onRunExample={runExample}
-          onShowHint={() => setHintCount((count) => Math.min(count + 1, currentLesson.hints.length))}
           result={result}
         />
       </div>

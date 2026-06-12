@@ -7,12 +7,7 @@ interface LessonHeaderProps {
   onSelectLesson: (lessonId: string) => void;
 }
 
-export function LessonHeader({
-  currentLesson,
-  lessons,
-  progress,
-  onSelectLesson
-}: LessonHeaderProps) {
+export function LessonHeader({ currentLesson, lessons, progress, onSelectLesson }: LessonHeaderProps) {
   const currentIndex = lessons.findIndex((lesson) => lesson.id === currentLesson.id);
 
   return (
@@ -24,11 +19,11 @@ export function LessonHeader({
         <p>{currentLesson.explanation}</p>
       </div>
 
-      <nav className="lesson-progress" aria-label="Beginner lesson progress">
+      <nav className="lesson-progress-rail" aria-label="Beginner lesson progress">
         <span className="progress-label">
           Lesson {currentLesson.order} of {lessons.length}
         </span>
-        <div className="lesson-dots">
+        <div className="progress-track">
           {lessons.map((lesson, index) => {
             const isCompleted = progress.completedLessonIds.includes(lesson.id);
             const isCurrent = lesson.id === currentLesson.id;
@@ -38,14 +33,12 @@ export function LessonHeader({
               <button
                 aria-current={isCurrent ? "step" : undefined}
                 aria-label={`Lesson ${lesson.order}: ${lesson.title}`}
-                className={`lesson-dot${isCompleted ? " is-complete" : ""}${isCurrent ? " is-current" : ""}`}
+                className={`progress-step${isCompleted ? " is-complete" : ""}${isCurrent ? " is-current" : ""}`}
                 disabled={!isUnlocked}
                 key={lesson.id}
                 onClick={() => onSelectLesson(lesson.id)}
                 type="button"
-              >
-                {lesson.order}
-              </button>
+              />
             );
           })}
         </div>
