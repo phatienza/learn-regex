@@ -38,7 +38,9 @@ export function TerminalPanel({
   onReset
 }: TerminalPanelProps) {
   const isPass = result?.status === "pass";
-  const hasRunExample = Boolean(exampleResult);
+  const hasRunExample = Boolean(exampleResult) || isComplete;
+  const showPracticeControls = !isComplete || Boolean(exampleResult) || Boolean(result);
+  const learnContentId = `learn-content-${lesson.id}`;
   const [isLearnOpen, setIsLearnOpen] = useState(true);
   const [shouldFocusCommand, setShouldFocusCommand] = useState(false);
   const [lastSubmittedCommand, setLastSubmittedCommand] = useState("");
@@ -58,6 +60,13 @@ export function TerminalPanel({
     setShouldFocusCommand(false);
     setLastSubmittedCommand("");
   }, [lesson.id]);
+
+  useEffect(() => {
+    if (exampleResult || isComplete) return;
+    setIsLearnOpen(true);
+    setShouldFocusCommand(false);
+    setLastSubmittedCommand("");
+  }, [exampleResult, isComplete]);
 
   useEffect(() => {
     if (!exampleResult || !shouldFocusCommand) return;
@@ -93,14 +102,20 @@ export function TerminalPanel({
         <div className="section-heading-row">
           <span>Learn</span>
           {hasRunExample ? (
-            <button className="ghost-button" onClick={() => setIsLearnOpen((current) => !current)} type="button">
+            <button
+              aria-controls={learnContentId}
+              aria-expanded={isLearnOpen}
+              className="ghost-button"
+              onClick={() => setIsLearnOpen((current) => !current)}
+              type="button"
+            >
               {isLearnOpen ? <ChevronUp aria-hidden="true" size={16} /> : <ChevronDown aria-hidden="true" size={16} />}
               {isLearnOpen ? "Hide Learn" : "Show Learn"}
             </button>
           ) : null}
         </div>
         {isLearnOpen ? (
-          <div className="learn-content">
+          <div className="learn-content" id={learnContentId}>
             <p>{lesson.example.explanation}</p>
             <div className="example-command">
               <div>
@@ -136,86 +151,90 @@ export function TerminalPanel({
 
       {hasRunExample ? (
         <div className="lab-workspace">
-          <div className="lesson-prompt">
-            <span>Lab</span>
-            <p>{lesson.prompt}</p>
-            <div className="expected-output">
-              <span>Expected output</span>
-              {lesson.expected.outputLines.map((line) => (
-                <pre className="expected-output-line" key={line}>
-                  {line}
-                </pre>
-              ))}
-            </div>
-          </div>
+          {showPracticeControls ? (
+            <>
+              <div className="lesson-prompt">
+                <span>Lab</span>
+                <p>{lesson.prompt}</p>
+                <div className="expected-output">
+                  <span>Expected output</span>
+                  {lesson.expected.outputLines.map((line) => (
+                    <pre className="expected-output-line" key={line}>
+                      {line}
+                    </pre>
+                  ))}
+                </div>
+              </div>
 
-          <form
-            className="command-form"
-            onSubmit={(event) => {
-              event.preventDefault();
-              handleRunCommand();
-            }}
-          >
-            <label htmlFor="grep-command">Grep command</label>
-            <div className="command-line">
-              <span className="prompt-symbol" aria-hidden="true">
-                $
-              </span>
-              <input
-                autoComplete="off"
-                id="grep-command"
-                onChange={(event) => onCommandChange(event.target.value)}
-                placeholder={`grep 'pattern' ${filename}`}
-                ref={commandInputRef}
-                spellCheck={false}
-                value={command}
-              />
-              <span className="terminal-cursor" aria-hidden="true" />
-              <button className="run-command-button" type="submit">
-                <Play aria-hidden="true" size={15} />
-                Run
-              </button>
-            </div>
-          </form>
+              <form
+                className="command-form"
+                onSubmit={(event) => {
+                  event.preventDefault();
+                  handleRunCommand();
+                }}
+              >
+                <label htmlFor="grep-command">Grep command</label>
+                <div className="command-line">
+                  <span className="prompt-symbol" aria-hidden="true">
+                    $
+                  </span>
+                  <input
+                    autoComplete="off"
+                    id="grep-command"
+                    onChange={(event) => onCommandChange(event.target.value)}
+                    placeholder={`grep 'pattern' ${filename}`}
+                    ref={commandInputRef}
+                    spellCheck={false}
+                    value={command}
+                  />
+                  <span className="terminal-cursor" aria-hidden="true" />
+                  <button className="run-command-button" type="submit">
+                    <Play aria-hidden="true" size={15} />
+                    Run
+                  </button>
+                </div>
+              </form>
 
-          <div className="terminal-output" aria-live="polite">
-            <div className="terminal-output-title">Output</div>
-            {lastSubmittedCommand ? <pre className="terminal-command-echo">$ {lastSubmittedCommand}</pre> : null}
-            {result ? (
-              result.outputLines.length > 0 ? (
-                result.outputLines.map((line, index) => (
-                  <pre className="terminal-output-line terminal-line-appear" key={`${line.lineNumber}-${index}`}>
-                    <HighlightedText
-                      text={line.displayText}
-                      spans={line.spans}
-                      groups={line.groups}
-                      lineNumbers={line.lineNumberSpans}
-                    />
-                  </pre>
-                ))
-              ) : (
-                <p className="terminal-empty">No lines matched.</p>
-              )
-            ) : (
-              <p className="terminal-empty">Run a command to compare output with the lesson goal.</p>
-            )}
-          </div>
+              <div className="terminal-output" aria-live="polite">
+                <div className="terminal-output-title">Output</div>
+                {lastSubmittedCommand ? <pre className="terminal-command-echo">$ {lastSubmittedCommand}</pre> : null}
+                {result ? (
+                  result.outputLines.length > 0 ? (
+                    result.outputLines.map((line, index) => (
+                      <pre className="terminal-output-line terminal-line-appear" key={`${line.lineNumber}-${index}`}>
+                        <HighlightedText
+                          text={line.displayText}
+                          spans={line.spans}
+                          groups={line.groups}
+                          lineNumbers={line.lineNumberSpans}
+                        />
+                      </pre>
+                    ))
+                  ) : (
+                    <p className="terminal-empty">No lines matched.</p>
+                  )
+                ) : (
+                  <p className="terminal-empty">Run a command to compare output with the lesson goal.</p>
+                )}
+              </div>
 
-          {result ? (
-            <div className={`feedback ${isPass ? "is-pass" : "is-fail"}`} role="status">
-              {isPass ? <CheckCircle2 aria-hidden="true" size={18} /> : <XCircle aria-hidden="true" size={18} />}
-              <span>{result.feedback}</span>
-            </div>
+              {result ? (
+                <div className={`feedback ${isPass ? "is-pass" : "is-fail"}`} role="status">
+                  {isPass ? <CheckCircle2 aria-hidden="true" size={18} /> : <XCircle aria-hidden="true" size={18} />}
+                  <span>{result.feedback}</span>
+                </div>
+              ) : null}
+
+              <div className="terminal-actions">
+                <button className="primary-button" disabled={!isPass} onClick={onAdvance} type="button">
+                  <ArrowRight aria-hidden="true" size={17} />
+                  {isLastLesson ? "Finish path" : "Next lesson"}
+                </button>
+              </div>
+            </>
           ) : null}
 
           <TerminalBuddy hints={lesson.hints} hintCount={hintCount} onShowHint={onShowHint} status={buddyStatus} />
-
-          <div className="terminal-actions">
-            <button className="primary-button" disabled={!isPass} onClick={onAdvance} type="button">
-              <ArrowRight aria-hidden="true" size={17} />
-              {isLastLesson ? "Finish path" : "Next lesson"}
-            </button>
-          </div>
 
           {isComplete ? <p className="completion-note">Beginner path complete. Progress is saved in this browser.</p> : null}
         </div>

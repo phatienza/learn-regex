@@ -2,6 +2,7 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { App } from "./App";
+import { lessons } from "./content/lessons";
 import { PROGRESS_STORAGE_KEY } from "./storage/progress";
 
 function expectAbsentOrNotVisible(element: HTMLElement | null) {
@@ -52,7 +53,7 @@ describe("App", () => {
     await user.click(screen.getByRole("button", { name: /run example/i }));
 
     expect(screen.getByText("Lab")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /show learn/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /show learn/i })).toHaveAttribute("aria-expanded", "false");
     expectAbsentOrNotVisible(
       screen.queryByText("Literal text has no special regex meaning. This example finds lines that contain INFO.")
     );
@@ -72,6 +73,34 @@ describe("App", () => {
     ).toBeInTheDocument();
     expect(screen.getByLabelText(/grep command/i)).toHaveValue("grep 'ERROR' app.log");
     expect(screen.getByRole("button", { name: /hide learn/i })).toBeInTheDocument();
+  });
+
+  it("reset after running the first example restores Learn content and Run example access", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.click(screen.getByRole("button", { name: /run example/i }));
+    expect(screen.getByRole("button", { name: /show learn/i })).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: /reset progress/i }));
+
+    expect(
+      screen.getByText("Literal text has no special regex meaning. This example finds lines that contain INFO.")
+    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /run example/i })).toBeInTheDocument();
+    expectAbsentOrNotVisible(screen.queryByText("Lab"));
+  });
+
+  it("submits the command with Enter and echoes the terminal command", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.click(screen.getByRole("button", { name: /run example/i }));
+    await user.type(screen.getByLabelText(/grep command/i), "grep 'ERROR' app.log");
+    await user.keyboard("{Enter}");
+
+    expect(screen.getByText("$ grep 'ERROR' app.log")).toBeInTheDocument();
+    expect(screen.getByText("Nice. Literal search is the baseline for every regex.")).toBeInTheDocument();
   });
 
   it("lets a learner complete the first lesson and advance with saved progress", async () => {
@@ -117,5 +146,32 @@ describe("App", () => {
       currentLessonId: "case-insensitive",
       completedLessonIds: ["literal-matches"]
     });
+  });
+
+  it("shows completion note and complete Buddy copy after finishing the capstone", async () => {
+    const user = userEvent.setup();
+    localStorage.setItem(
+      PROGRESS_STORAGE_KEY,
+      JSON.stringify({
+        currentLessonId: "capstone-log-search",
+        completedLessonIds: lessons
+          .filter((lesson) => lesson.id !== "capstone-log-search")
+          .map((lesson) => lesson.id)
+      })
+    );
+    render(<App />);
+
+    expect(screen.getByRole("heading", { name: /save numbered findings/i })).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: /run example/i }));
+    await user.type(
+      screen.getByLabelText(/grep command/i),
+      "grep -En 'WARN|ERROR' incident.log > findings.txt"
+    );
+    await user.click(screen.getByRole("button", { name: /^run$/i }));
+    await user.click(screen.getByRole("button", { name: /finish path/i }));
+
+    expect(screen.getByText("Beginner path complete. Progress is saved in this browser.")).toBeInTheDocument();
+    expect(screen.getByText("Path complete. Strong regex energy.")).toBeInTheDocument();
   });
 });
