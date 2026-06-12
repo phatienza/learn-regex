@@ -568,6 +568,7 @@ h2 {
 
 .terminal-empty {
   color: #87958d;
+  white-space: normal;
 }
 
 .text-highlight {
