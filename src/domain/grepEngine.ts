@@ -86,6 +86,16 @@ export function evaluateAttempt(
     };
   }
 
+  if (lesson.requiresExtended && !parsed.command.flags.extended) {
+    return {
+      parsed: parsed.command,
+      outputLines: [],
+      matchSpans: [],
+      status: "fail",
+      feedback: "Use -E for this lesson so grep treats extended regex operators as active."
+    };
+  }
+
   let execution: GrepExecution;
   try {
     execution = executeGrep(parsed.command, file);

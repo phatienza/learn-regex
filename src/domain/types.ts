@@ -35,6 +35,7 @@ export interface Lesson {
   canonicalCommand: string;
   successFeedback: string;
   allowRedirect?: boolean;
+  requiresExtended?: boolean;
 }
 
 export interface ParsedGrepCommand {

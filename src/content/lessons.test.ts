@@ -83,6 +83,22 @@ describe("beginner lessons", () => {
     expect(capstoneLesson?.example.explanation).toContain("> findings.txt");
   });
 
+  it("explains and requires -E for the one-or-more lesson", () => {
+    const oneOrMoreLesson = lessons.find((lesson) => lesson.id === "one-or-more");
+    const file = filesById.get(oneOrMoreLesson?.practiceFileId ?? "");
+
+    expect(oneOrMoreLesson).toBeDefined();
+    expect(file).toBeDefined();
+    expect(oneOrMoreLesson?.example.command).toBe("grep -E '^job-\\d$' request-ids.txt");
+    expect(oneOrMoreLesson?.explanation).toContain("extended regex");
+    expect(oneOrMoreLesson?.explanation).toContain("+");
+
+    const missingExtendedFlag = evaluateAttempt("grep '^job-\\d+$' request-ids.txt", oneOrMoreLesson!, file!);
+
+    expect(missingExtendedFlag.status).toBe("fail");
+    expect(missingExtendedFlag.feedback).toContain("-E");
+  });
+
   it("uses capstone-only output redirection", () => {
     const redirectLessons = lessons.filter((lesson) => lesson.allowRedirect);
 

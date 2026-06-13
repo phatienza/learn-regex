@@ -85,6 +85,27 @@ describe("App", () => {
     expect(screen.getByLabelText(/grep command/i)).toHaveFocus();
   });
 
+  it("targets the lab workspace when starting lesson 6 practice", async () => {
+    const user = userEvent.setup();
+    const scrollIntoView = vi.fn();
+    Element.prototype.scrollIntoView = scrollIntoView;
+    localStorage.setItem(
+      PROGRESS_STORAGE_KEY,
+      JSON.stringify({
+        currentLessonId: "escape-special-characters",
+        completedLessonIds: lessons.slice(0, 5).map((lesson) => lesson.id)
+      })
+    );
+    render(<App />);
+
+    await user.click(screen.getByRole("button", { name: /run example/i }));
+    await user.click(screen.getByRole("button", { name: /start lab/i }));
+
+    expect(screen.getByText("Find only the row that contains the literal version v1.2.0.")).toBeInTheDocument();
+    expect(scrollIntoView).toHaveBeenCalledWith({ block: "start", behavior: "smooth" });
+    expect(screen.getByLabelText(/grep command/i)).toHaveFocus();
+  });
+
   it("lets the learner reopen Learn after the example runs without losing lab state", async () => {
     const user = userEvent.setup();
     render(<App />);

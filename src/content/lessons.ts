@@ -227,10 +227,10 @@ export const lessons: Lesson[] = [
     title: "Repeat One Or More",
     concept: "One or more with +",
     explanation:
-      "With grep -E, + means the previous piece repeats one or more times.",
+      "Use grep -E for extended regex. In this lesson, + means the previous piece repeats one or more times.",
     example: {
-      command: "grep '^job-\\d$' request-ids.txt",
-      explanation: "Without +, this pattern only accepts one digit after job-."
+      command: "grep -E '^job-\\d$' request-ids.txt",
+      explanation: "With -E enabled, the next step can add + so one digit becomes one or more digits."
     },
     practiceFileId: "request-ids",
     prompt: "Find job IDs with one or more digits after job-.",
@@ -248,7 +248,8 @@ export const lessons: Lesson[] = [
       ]
     },
     canonicalCommand: "grep -E '^job-\\d+$' request-ids.txt",
-    successFeedback: "Good. + lets one digit become a run of digits."
+    successFeedback: "Good. -E turns on the extended form where + can mean one or more.",
+    requiresExtended: true
   },
   {
     id: "zero-or-more",

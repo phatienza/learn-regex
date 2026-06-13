@@ -41,6 +41,7 @@ export function TerminalPanel({
   const [shouldFocusCommand, setShouldFocusCommand] = useState(false);
   const [lastSubmittedCommand, setLastSubmittedCommand] = useState("");
   const commandInputRef = useRef<HTMLInputElement>(null);
+  const labRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setIsLearnOpen(true);
@@ -59,6 +60,7 @@ export function TerminalPanel({
 
   useEffect(() => {
     if (!isLabOpen || !shouldFocusCommand) return;
+    labRef.current?.scrollIntoView?.({ block: "start", behavior: "smooth" });
     commandInputRef.current?.focus();
     setShouldFocusCommand(false);
   }, [isLabOpen, shouldFocusCommand]);
@@ -154,7 +156,7 @@ export function TerminalPanel({
         </div>
 
         {hasStartedLab ? (
-          <div className="lab-workspace">
+          <div className="lab-workspace" ref={labRef}>
             {showPracticeControls ? (
               <>
                 <div className="lesson-prompt">
